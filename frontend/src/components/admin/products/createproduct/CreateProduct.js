@@ -44,7 +44,7 @@ export const CreateProduct = () => {
   const [article, setArticle] = useState("");
   const [content, setContent] = useState("");
   const [product_Type, setProductType] = useState("Simple product");
- 
+
   // Genral
   // const [general_Price, setGeneralPrice] = useState("");
   const [product_regular_price, setProduct_regular_price] = useState("");
@@ -185,72 +185,102 @@ export const CreateProduct = () => {
     // if(product_Type === 'Simple product'){
 
     // }
-    console.log(
-      title,
-      article,
-      content,
-      product_Type,
-      SKU,
-      Stock,
-      Sold_Individually,
-      Availability_Date,
-      Weight,
-      Dimensions,
-      Shipping_class,
-      generateUuid(),
-      product_regular_price,
-      product_sale_price,
-      Default_value
-    );
+    let hasError = false;
     switch (true) {
       case !title.trim():
+        hasError = true;
         alert.error("fill Product Title field");
         break;
-      // case !content.trim():
-      //   alert.error("fill Product Short Description field");
-      //   break;
-      // case !article.trim():
-      //   alert.error("fill Product Description field");
-      //   break;
-      // case !product_Type.trim():
-      //   alert.error("fill Product Description field");
-      //   break;
-      // case !SKU.trim():
-      //   alert.error("fill SKU field");
-      //   break;
-      // case product_Type === "Simple product":
-      //   if (
-      //     product_regular_price.trim() === "" ||
-      //     product_sale_price.trim() === ""
-      //   ) {
-      //     alert.error(
-      //       "Please fill in Regular Price and Sale Price fields for a Simple product"
-      //     );
-      //   }
-      case product_Type !== "Simple product":
-        if(!Variations){
-          alert.error("Please add variations");
+      case !content.trim():
+        hasError = true;
+        alert.error("fill Product Short Description field");
+        break;
+      case !article.trim():
+        hasError = true;
+        alert.error("fill Product Description field");
+        break;
+      case !product_Type.trim():
+        hasError = true;
+        alert.error("fill Product Description field");
+        break;
 
+      case (imageIds ?? []).length === 0:
+        hasError = true;
+        alert.error("Please add images");
+        break;
+      case (checkedItems ?? []).length === 0:
+        hasError = true;
+        alert.error("Please select parent category");
+        break;
+      case (subcheckedItems ?? []).length === 0:
+        hasError = true;
+        alert.error("Please select sub category");
+        break;
+
+      case product_Type === "Simple product":
+        if (
+          product_regular_price.trim() === "" ||
+          product_sale_price.trim() === ""
+        ) {
+          hasError = true;
+          alert.error(
+            "Please fill in Regular Price and Sale Price fields for a Simple product"
+          );
         }
-        const meta_value = Variations.meta_value
-        meta_value.forEach(item => {
+        break;
+      case product_Type !== "Simple product":
+        if (!Variations) {
+          hasError = true;
+          alert.error("Please add variations");
+          return;
+        }
+        const meta_value = Variations.meta_value;
+        meta_value.forEach((item) => {
           const keys = Object.keys(item);
           keys.forEach((subitem, k) => {
-            if (!item[subitem] || !item[subitem][0]) {
-          alert.error(`${subitem} Please add variations`);
-        } 
-        // else {
-        //   if (!item[subitem][0].regular_price) {
-        //     alert.error(`${subitem} Please add regular price`);
-        //   }
-            console.log(item[subitem][0].regular_price,keys)
-            console.log(item[subitem][0].sale_price)
-          })
+            if (!Variations) {
+              hasError = true;
+              alert.error("Please add variations");
+              return;
+            }
+            const regularPrice = item[subitem][0].regular_price;
+            const salePrice = item[subitem][0].sale_price;
+
+            switch (true) {
+              case typeof regularPrice !== "number" ||
+                isNaN(regularPrice) ||
+                typeof salePrice !== "number" ||
+                isNaN(salePrice):
+                hasError = true;
+                alert.error(`Please add regular amd sale price of ${keys}`);
+                break;
+
+              default:
+                break;
+            }
+          });
         });
+        if (!Default_value.trim()) {
+          hasError = true;
+          alert.error("fill Default value field");
+          return;
+        }
         break;
-        
+
       default:
+        alert.error("success fully add");
         break;
+    }
+    if (!hasError) {
+      dispatch(
+        createNewProduct(
+          productData,
+          VariationData,
+          imageIds ? imageIds : [],
+          subcheckedItems ? subcheckedItems : [],
+          checkedItems ? checkedItems : []
+        )
+      );
     }
     // if(title.trim()==='' ||
     // content.trim()==='' ){
