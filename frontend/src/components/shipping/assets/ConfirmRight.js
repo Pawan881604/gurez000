@@ -67,7 +67,7 @@ export const ConfirmRight = ({ cartItem, shippingInfo }) => {
       subtotal,
       shippingChargs,
       tax,
-      totalPrice: totalPrice,
+      totalPrice: discountedprice === 0 ? totalPrice : discountedprice,
       coupon: coupon_data && coupon_data.name,
       coupon_uuid: coupon_data && coupon_data.uuid,
       discountamount:
@@ -75,7 +75,7 @@ export const ConfirmRight = ({ cartItem, shippingInfo }) => {
           ? `${coupon_data.disscount}%`
           : null,
       discounttype: coupon_data && coupon_data.type,
-      coupon_discount: discountedprice && discountedprice,
+      coupon_discount:Math.abs(discountedprice===0?0:totalPrice-discountedprice),
       uuid,
       totalQuantity,
     };
@@ -91,7 +91,8 @@ export const ConfirmRight = ({ cartItem, shippingInfo }) => {
     }
     if (coupon_data) {
       if (coupon_data.type === "percentage") {
-        const data = (totalPrice * coupon_data.disscount) / 100;
+        const discount = totalPrice * (coupon_data.disscount / 100);
+        const  data = totalPrice -discount;
         setDiscountedprice(data);
       } else if (coupon_data.type === "fix items") {
         const data = totalPrice - coupon_data.disscount;
